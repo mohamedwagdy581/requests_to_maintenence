@@ -1,6 +1,7 @@
 class RequestModel {
   String? uId;
   late String city;
+  late String companyName;
   late String school;
   late String machine;
   late String machineType;
@@ -9,6 +10,7 @@ class RequestModel {
   RequestModel({
     this.uId = '',
     required this.city,
+    required this.companyName,
     required this.school,
     required this.machine,
     required this.machineType,
@@ -19,6 +21,7 @@ class RequestModel {
   {
     'uId' : uId,
     'city' : city,
+    'companyName' : companyName,
     'school' : school,
     'machine' : machine,
     'machineType' : machineType,
@@ -29,6 +32,7 @@ class RequestModel {
   {
     uId = json['uId'];
     city = json['city'];
+    companyName = json['companyName'];
     school = json['school'];
     machine = json['machine'];
     machineType = json['machineType'];

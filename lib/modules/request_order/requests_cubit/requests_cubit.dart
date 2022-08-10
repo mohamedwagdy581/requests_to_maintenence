@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../models/request_model.dart';
@@ -20,12 +21,14 @@ class RequestCubit extends Cubit<RequestStates>
       })
   {
     emit(RequestLoadingState());
+    var companyName = FirebaseAuth.instance.currentUser?.displayName;
 
-    FirebaseFirestore.instance.collection('requests').doc().get().then((value)
+    FirebaseFirestore.instance.collection('requests').doc(companyName).get().then((value)
     {
 
       createUser(
         city: city,
+        companyName: companyName.toString(),
         school: school,
         machine: machine,
         uId: value.id.toString(),
@@ -42,6 +45,7 @@ class RequestCubit extends Cubit<RequestStates>
   void createUser(
       {
         required String city,
+        required String companyName,
         required String school,
         required String machine,
         required String uId,
@@ -52,6 +56,7 @@ class RequestCubit extends Cubit<RequestStates>
 
     RequestModel model = RequestModel(
       city: city,
+      companyName: companyName,
       school: school,
       machine: machine,
       uId: uId,

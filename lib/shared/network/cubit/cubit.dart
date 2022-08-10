@@ -56,24 +56,6 @@ class AppCubit extends Cubit<AppStates> {
     });
   }
 
-  List<UserModel> users = [];
-  void getAllUsers ()
-  {
-    FirebaseFirestore.instance.collection('users').get().then((value)
-    {
-      value.docs.forEach((element)
-      {
-        users.add(UserModel.fromJson(element.data()));
-        print(users);
-        emit(AppGetAllUserSuccessState());
-      });
-    }).catchError((error)
-    {
-      print(error.toString());
-      emit(AppGetAllUserErrorState(error));
-    });
-  }
-
 
   // ProfilePickedImage
   //XFile? profileImage;

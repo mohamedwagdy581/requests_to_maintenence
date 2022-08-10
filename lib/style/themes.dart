@@ -16,6 +16,7 @@ ThemeData darkTheme = ThemeData(
     systemOverlayStyle: SystemUiOverlayStyle(
       statusBarColor: HexColor('333739'),
       statusBarBrightness: Brightness.dark,
+
     ),
     backgroundColor: HexColor('333739'),
     titleSpacing: 20.0,
