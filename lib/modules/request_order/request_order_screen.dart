@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -19,58 +20,57 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
   int _cityValue = 0;
   String _city = '';
   var cities = <String>[
-    'City?',
-    'Jazan',
-    'Sabia',
-    'Jeddah',
-    'Riyadh',
-    'Makkah',
+    'المدينة؟',
+    'جازان',
+    'صبيا',
+    'جده',
+    'الرياض',
+    'مكة',
   ];
 
   int _schoolValue = 0;
   String _school = '';
   var schools = <String>[
-    'School?',
-    'Jazan School',
-    'Sabia School',
-    'Jeddah School',
-    'Riyadh School',
-    'Makkah School',
-    'Emmarah',
+    'المؤسسة؟',
+    'مدرسة جازان',
+    'مدرسة صبيا',
+    'مدرسة جده',
+    'مدرسة الرياض',
+    'مدرسة مكة',
+    'الإمارة',
   ];
 
   int _machineValue = 0;
   String _machine = '';
   var machines = <String>[
-    'Machine?',
-    'Printer',
-    'Projector',
-    'Laptop',
-    'PC',
-    'Accessories',
+    'الآله؟',
+    'طابعة',
+    'بروجيكتور',
+    'لابتوب',
+    'كمبيوتر مكتبي',
+    'إكسسوارات',
   ];
 
   int _machineTypeValue = 0;
   String _machineType = '';
   var machineTypes = <String>[
-    'Machine Type?',
-    'Lenovo',
-    'Apple',
-    'Samsung',
-    'Redmi',
-    'Dell',
-    'Sony',
-    'Toshiba',
-    'Sharp',
+    'نوع الآله؟',
+    'لينوفو',
+    'ابل',
+    'سامسونج',
+    'شاومي',
+    'ديل',
+    'سوني',
+    'توشيبا',
+    'شارب',
   ];
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   var consultationController = TextEditingController();
+  String selectedItem = '';
+  List listItems = [];
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -91,21 +91,57 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                     SizedBox(
                       height: height * 0.03,
                     ),
+
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance
+                          .collection('dropdownMenue')
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Text('Loading');
+                        } else {
+                          final List<DropdownMenuItem> cities = [];
+                          dynamic selectedCity;
+                          for (int i = 0; i < snapshot.data!.docs.length; i++) {
+                            DocumentSnapshot snap = snapshot.data!.docs[i];
+                            cities.add(
+                              DropdownMenuItem(
+                                value: snap.id,
+                                child: Text(snap.id),
+                              ),
+                            );
+                          }
+                          return DropdownButton(
+                            value: selectedCity,
+                            //isExpanded: false,
+                            hint: const Text('المدينة'),
+                            items: cities,
+                            onChanged: (value) {
+                              setState(() {
+                                selectedCity = value.toString();
+                                print(selectedCity);
+                              });
+                            },
+                          );
+                        }
+                      },
+                    ),
                     // City ListTile with DropdownButton
                     Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.0),
                         color: Colors.grey[300],
                       ),
                       child: ListTile(
-                        title: const Text(
-                          'Select your City',
+                        trailing: const Text(
+                          'إختار المدينة',
                           style: TextStyle(
                             fontSize: 18.0,
                           ),
                         ),
-                        trailing: DropdownButton<String>(
-                          hint: const Text('City'),
+                        leading: DropdownButton<String>(
+                          hint: const Text('المدينة'),
                           value: cities[_cityValue],
                           items: cities.map((String city) {
                             return DropdownMenuItem<String>(
@@ -128,19 +164,20 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
 
                     // School ListTile with DropdownButton
                     Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.0),
                         color: Colors.grey[300],
                       ),
                       child: ListTile(
-                        title: const Text(
-                          'Select your School',
+                        trailing: const Text(
+                          'إختار المؤسسة',
                           style: TextStyle(
                             fontSize: 18.0,
                           ),
                         ),
-                        trailing: DropdownButton<String>(
-                          hint: const Text('School'),
+                        leading: DropdownButton<String>(
+                          hint: const Text('المؤسسة'),
                           value: schools[_schoolValue],
                           items: schools.map((String school) {
                             return DropdownMenuItem<String>(
@@ -163,19 +200,20 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
 
                     // Machine ListTile with DropdownButton
                     Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.0),
                         color: Colors.grey[300],
                       ),
                       child: ListTile(
-                        title: const Text(
-                          'Select your Machine',
+                        trailing: const Text(
+                          'إختار الآله',
                           style: TextStyle(
                             fontSize: 18.0,
                           ),
                         ),
-                        trailing: DropdownButton<String>(
-                          hint: const Text('Machine'),
+                        leading: DropdownButton<String>(
+                          hint: const Text('الآله'),
                           value: machines[_machineValue],
                           items: machines.map((String machine) {
                             return DropdownMenuItem<String>(
@@ -198,19 +236,20 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
 
                     // Machine Type ListTile with DropdownButton
                     Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.0),
                         color: Colors.grey[300],
                       ),
                       child: ListTile(
-                        title: const Text(
-                          'Select Machine Type',
+                        trailing: const Text(
+                          'نوع الآله',
                           style: TextStyle(
                             fontSize: 18.0,
                           ),
                         ),
-                        trailing: DropdownButton<String>(
-                          hint: const Text('MachineType'),
+                        leading: DropdownButton<String>(
+                          hint: const Text('نوع الآله'),
                           value: machineTypes[_machineTypeValue],
                           items: machineTypes.map((String machineType) {
                             return DropdownMenuItem<String>(
@@ -240,19 +279,21 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                         textDirection: TextDirection.rtl,
                         maxLines: 5,
                         style: Theme.of(context).textTheme.subtitle1?.copyWith(
-                          color:
-                          AppCubit.get(context).isDark ? Colors.black : Colors.white,
-                        ),
+                              color: AppCubit.get(context).isDark
+                                  ? Colors.black
+                                  : Colors.white,
+                            ),
                         textAlign: TextAlign.end,
                         decoration: const InputDecoration(
                           hintText: ' !اكتب استفسارك',
                           contentPadding: EdgeInsets.symmetric(
-                              vertical: 20, horizontal: 15,
+                            vertical: 20,
+                            horizontal: 15,
                           ),
                           border: OutlineInputBorder(
                             borderSide: BorderSide(
-                            color: Colors.red,
-                          ),
+                              color: Colors.red,
+                            ),
                           ),
                         ),
                       ),
@@ -286,14 +327,15 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                             _machineTypeValue = 0;
                             consultationController.text = '';
                             showToast(
-                              message:
-                                  'Request To Maintenance Sent Successfully',
+                              message: 'تم إرسال طلبك بنجاح',
                               state: ToastStates.SUCCESS,
                             );
                           }
                         },
-                        text: 'Done',
-                        backgroundColor: AppCubit.get(context).isDark ? Colors.blue : Colors.deepOrange,
+                        text: 'إرسال',
+                        backgroundColor: AppCubit.get(context).isDark
+                            ? Colors.blue
+                            : Colors.deepOrange,
                       ),
                       fallback: (context) =>
                           const Center(child: CircularProgressIndicator()),

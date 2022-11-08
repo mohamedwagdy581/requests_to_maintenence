@@ -60,6 +60,22 @@ Widget defaultTextFormField({
           )),
     );
 
+Widget customListTileWidget({
+  required VoidCallback onTapped,
+  required Widget title,
+  Widget? leadingWidget,
+  Widget? trailingWidget,
+}) {
+  return InkWell(
+    onTap: onTapped,
+    child: ListTile(
+      title: title,
+      leading: leadingWidget,
+      trailing: trailingWidget,
+    ),
+  );
+}
+
 Widget defaultSigningInRowButton({
   required String title,
   TextStyle? titleStyle,

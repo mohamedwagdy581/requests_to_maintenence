@@ -18,16 +18,16 @@ class AppGetUserErrorState extends AppStates
   AppGetUserErrorState(this.error);
 }
 
-// App Get All User State
-class AppGetAllUserLoadingState extends AppStates {}
+// App Get All Document IDs State
+class AppGetDocIDsLoadingState extends AppStates {}
 
-class AppGetAllUserSuccessState extends AppStates {}
+class AppGetDocIDsSuccessState extends AppStates {}
 
-class AppGetAllUserErrorState extends AppStates
+class AppGetDocIDsErrorState extends AppStates
 {
   final String error;
 
-  AppGetAllUserErrorState(this.error);
+  AppGetDocIDsErrorState(this.error);
 }
 
 // Change Mode Theme of App

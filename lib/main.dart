@@ -12,7 +12,8 @@ import 'splash_screen.dart';
 import 'style/themes.dart';
 
 
-void main() async {
+void main() async
+{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   DioHelper.init();

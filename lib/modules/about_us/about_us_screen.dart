@@ -24,7 +24,8 @@ class AboutUsScreen extends StatelessWidget {
 
           const CircleAvatar(
             radius: 60.0,
-            backgroundImage: AssetImage('assets/images/logo.jpeg'),
+            backgroundImage: AssetImage('assets/images/baruziklogo.png',),
+            backgroundColor: Colors.transparent,
           ),
 
           SizedBox(
@@ -32,7 +33,7 @@ class AboutUsScreen extends StatelessWidget {
           ),
 
           Text(
-            'Baruzik',
+            'مؤسسة عبدالعزيز بارزيق',
             style: Theme.of(context).textTheme.bodyText1,
           ),
 
@@ -46,14 +47,14 @@ class AboutUsScreen extends StatelessWidget {
             {
               const link = WhatsAppUnilink(
                 phoneNumber: '+966-540814455',
-                text: "Hi Baruzik, I have some issue needs to fix",
+                text: "مرحبا بارزيق, لدي مشكله اريد حلها!!",
               );
               // Convert the WhatsAppUnilink instance to a string.
               // Use either Dart's string interpolation or the toString() method.
               // The "launch" method is part of "url_launcher".
               await launch('$link');
             },
-            title: 'Connect with WhatsApp',
+            title: 'تواصل معنا عبر الواتساب',
             titleStyle: Theme.of(context).textTheme.headline6?.copyWith(
               color: AppCubit.get(context).isDark ? Colors.black : Colors.white,
               fontSize: 18.0

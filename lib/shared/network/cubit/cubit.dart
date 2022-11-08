@@ -24,17 +24,15 @@ class AppCubit extends Cubit<AppStates> {
 
   // List of AppBar Title
   List<String> appBarTitle = const [
-    'Home',
-    'Profile',
-    'Settings',
+    'الرئيسية',
+    //'Settings',
   ];
 
   // Change BottomNavigationBar index
   int currentIndex = 0;
   List<Widget> screens = const [
     RequestOrderScreen(),
-    ProfileScreen(),
-    SettingsScreen(),
+    //SettingsScreen(),
   ];
 
   void changeBottomNavBar(int index) {
