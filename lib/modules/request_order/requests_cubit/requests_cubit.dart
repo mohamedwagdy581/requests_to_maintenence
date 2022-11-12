@@ -23,7 +23,7 @@ class RequestCubit extends Cubit<RequestStates>
     emit(RequestLoadingState());
     var companyName = FirebaseAuth.instance.currentUser?.displayName;
 
-    FirebaseFirestore.instance.collection('requests').doc(companyName).get().then((value)
+    FirebaseFirestore.instance.collection('requests').doc().get().then((value)
     {
 
       createUser(
@@ -76,6 +76,6 @@ class RequestCubit extends Cubit<RequestStates>
       emit(CreateRequestErrorState(error.toString()));
     });
   }
-  
+
 
 }

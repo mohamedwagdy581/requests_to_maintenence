@@ -17,58 +17,17 @@ class RequestOrderScreen extends StatefulWidget {
 }
 
 class _RequestOrderScreenState extends State<RequestOrderScreen> {
-  int _cityValue = 0;
-  String _city = '';
-  var cities = <String>[
-    'المدينة؟',
-    'جازان',
-    'صبيا',
-    'جده',
-    'الرياض',
-    'مكة',
-  ];
+  String? selectedCity;
+  String? selectedCompany;
 
-  int _schoolValue = 0;
-  String _school = '';
-  var schools = <String>[
-    'المؤسسة؟',
-    'مدرسة جازان',
-    'مدرسة صبيا',
-    'مدرسة جده',
-    'مدرسة الرياض',
-    'مدرسة مكة',
-    'الإمارة',
-  ];
+  String? selectedMachine;
 
-  int _machineValue = 0;
-  String _machine = '';
-  var machines = <String>[
-    'الآله؟',
-    'طابعة',
-    'بروجيكتور',
-    'لابتوب',
-    'كمبيوتر مكتبي',
-    'إكسسوارات',
-  ];
 
-  int _machineTypeValue = 0;
-  String _machineType = '';
-  var machineTypes = <String>[
-    'نوع الآله؟',
-    'لينوفو',
-    'ابل',
-    'سامسونج',
-    'شاومي',
-    'ديل',
-    'سوني',
-    'توشيبا',
-    'شارب',
-  ];
+  String? selectedMachineType;
+
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   var consultationController = TextEditingController();
-  String selectedItem = '';
-  List listItems = [];
 
 
 
@@ -92,40 +51,41 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                       height: height * 0.03,
                     ),
 
-                    StreamBuilder<QuerySnapshot>(
+                    /*StreamBuilder<QuerySnapshot>(
                       stream: FirebaseFirestore.instance
-                          .collection('dropdownMenue')
+                          .collection('machineTypes')
                           .snapshots(),
-                      builder: (context, snapshot) {
+                      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                        int i = 0;
                         if (!snapshot.hasData) {
                           return const Text('Loading');
                         } else {
-                          final List<DropdownMenuItem> cities = [];
-                          dynamic selectedCity;
-                          for (int i = 0; i < snapshot.data!.docs.length; i++) {
+                          final List<DropdownMenuItem<String>> cities = [];
+                          String? selectedCity;
+                          for (i = 0; i < snapshot.data!.docs.length; i++) {
                             DocumentSnapshot snap = snapshot.data!.docs[i];
+                            Map city = snap.data() as Map<String, dynamic>;
                             cities.add(
                               DropdownMenuItem(
-                                value: snap.id,
-                                child: Text(snap.id),
+                                value: city['machineTypeName'],
+                                child: Text(city['machineTypeName']),
                               ),
                             );
                           }
                           return DropdownButton(
                             value: selectedCity,
                             //isExpanded: false,
-                            hint: const Text('المدينة'),
+                            hint: const Text('المؤسسة؟'),
                             items: cities,
                             onChanged: (value) {
                               setState(() {
-                                selectedCity = value.toString();
-                                print(selectedCity);
+                                selectedCity = value;
                               });
                             },
                           );
                         }
                       },
-                    ),
+                    ),*/
                     // City ListTile with DropdownButton
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -140,20 +100,39 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                             fontSize: 18.0,
                           ),
                         ),
-                        leading: DropdownButton<String>(
-                          hint: const Text('المدينة'),
-                          value: cities[_cityValue],
-                          items: cities.map((String city) {
-                            return DropdownMenuItem<String>(
-                              value: city.toString(),
-                              child: Text(city),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _cityValue = cities.indexOf(value!);
-                              _city = value.toString();
-                            });
+                        leading: StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('cities')
+                              .snapshots(),
+                          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            int i = 0;
+                            if (!snapshot.hasData) {
+                              return const Text('Loading');
+                            } else {
+                              final List<DropdownMenuItem<String>> cities = [];
+
+                              for (i = 0; i < snapshot.data!.docs.length; i++) {
+                                DocumentSnapshot snap = snapshot.data!.docs[i];
+                                Map city = snap.data() as Map<String, dynamic>;
+                                cities.add(
+                                  DropdownMenuItem(
+                                    value: city['city'],
+                                    child: Text(city['city']),
+                                  ),
+                                );
+                              }
+                              return DropdownButton(
+                                value: selectedCity,
+                                //isExpanded: false,
+                                hint: const Text('المدينة'),
+                                items: cities,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedCity = value;
+                                  });
+                                },
+                              );
+                            }
                           },
                         ),
                       ),
@@ -176,20 +155,39 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                             fontSize: 18.0,
                           ),
                         ),
-                        leading: DropdownButton<String>(
-                          hint: const Text('المؤسسة'),
-                          value: schools[_schoolValue],
-                          items: schools.map((String school) {
-                            return DropdownMenuItem<String>(
-                              value: school,
-                              child: Text(school),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _schoolValue = schools.indexOf(value!);
-                              _school = value.toString();
-                            });
+                        leading: StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('companies')
+                              .snapshots(),
+                          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            int i = 0;
+                            if (!snapshot.hasData) {
+                              return const Text('Loading');
+                            } else {
+                              final List<DropdownMenuItem<String>> companies = [];
+
+                              for (i = 0; i < snapshot.data!.docs.length; i++) {
+                                DocumentSnapshot snap = snapshot.data!.docs[i];
+                                Map company = snap.data() as Map<String, dynamic>;
+                                companies.add(
+                                  DropdownMenuItem(
+                                    value: company['companyName'],
+                                    child: Text(company['companyName']),
+                                  ),
+                                );
+                              }
+                              return DropdownButton(
+                                value: selectedCompany,
+                                //isExpanded: false,
+                                hint: const Text('المؤسسة؟'),
+                                items: companies,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedCompany = value;
+                                  });
+                                },
+                              );
+                            }
                           },
                         ),
                       ),
@@ -212,20 +210,39 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                             fontSize: 18.0,
                           ),
                         ),
-                        leading: DropdownButton<String>(
-                          hint: const Text('الآله'),
-                          value: machines[_machineValue],
-                          items: machines.map((String machine) {
-                            return DropdownMenuItem<String>(
-                              value: machine,
-                              child: Text(machine),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _machineValue = machines.indexOf(value!);
-                              _machine = value.toString();
-                            });
+                        leading: StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('machines')
+                              .snapshots(),
+                          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            int i = 0;
+                            if (!snapshot.hasData) {
+                              return const Text('Loading');
+                            } else {
+                              final List<DropdownMenuItem<String>> machines = [];
+
+                              for (i = 0; i < snapshot.data!.docs.length; i++) {
+                                DocumentSnapshot snap = snapshot.data!.docs[i];
+                                Map machine = snap.data() as Map<String, dynamic>;
+                                machines.add(
+                                  DropdownMenuItem(
+                                    value: machine['machineName'],
+                                    child: Text(machine['machineName']),
+                                  ),
+                                );
+                              }
+                              return DropdownButton(
+                                value: selectedMachine,
+                                //isExpanded: false,
+                                hint: const Text('الآلة؟'),
+                                items: machines,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedMachine = value;
+                                  });
+                                },
+                              );
+                            }
                           },
                         ),
                       ),
@@ -248,21 +265,39 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                             fontSize: 18.0,
                           ),
                         ),
-                        leading: DropdownButton<String>(
-                          hint: const Text('نوع الآله'),
-                          value: machineTypes[_machineTypeValue],
-                          items: machineTypes.map((String machineType) {
-                            return DropdownMenuItem<String>(
-                              value: machineType,
-                              child: Text(machineType),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _machineTypeValue = machineTypes.indexOf(value!);
-                              _machineType = value.toString();
-                              //print(value.toString());
-                            });
+                        leading: StreamBuilder<QuerySnapshot>(
+                          stream: FirebaseFirestore.instance
+                              .collection('machineTypes')
+                              .snapshots(),
+                          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            int i = 0;
+                            if (!snapshot.hasData) {
+                              return const Text('Loading');
+                            } else {
+                              final List<DropdownMenuItem<String>> machineTypes = [];
+
+                              for (i = 0; i < snapshot.data!.docs.length; i++) {
+                                DocumentSnapshot snap = snapshot.data!.docs[i];
+                                Map machineType = snap.data() as Map<String, dynamic>;
+                                machineTypes.add(
+                                  DropdownMenuItem(
+                                    value: machineType['machineTypeName'],
+                                    child: Text(machineType['machineTypeName']),
+                                  ),
+                                );
+                              }
+                              return DropdownButton(
+                                value: selectedMachineType,
+                                //isExpanded: false,
+                                hint: const Text('نوع الآلة؟'),
+                                items: machineTypes,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedMachineType = value;
+                                  });
+                                },
+                              );
+                            }
                           },
                         ),
                       ),
@@ -308,23 +343,19 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                       builder: (context) => defaultButton(
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
-                            final city = _city.toString();
-                            final school = _school.toString();
-                            final machine = _machine.toString();
-                            final machineType = _machineType.toString();
-                            final consultation = consultationController.text;
+                            var city = selectedCity.toString();
+                            var company = selectedCompany.toString();
+                            var machine = selectedMachine.toString();
+                            var machineType = selectedMachineType.toString();
+                            var consultation = consultationController.text;
 
                             RequestCubit.get(context).userRequest(
                               city: city.toString(),
-                              school: school.toString(),
+                              school: company.toString(),
                               machine: machine.toString(),
                               machineType: machineType.toString(),
                               consultation: consultation.toString(),
                             );
-                            _cityValue = 0;
-                            _schoolValue = 0;
-                            _machineValue = 0;
-                            _machineTypeValue = 0;
                             consultationController.text = '';
                             showToast(
                               message: 'تم إرسال طلبك بنجاح',
