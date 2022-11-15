@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../shared/components/components.dart';
 import '../../shared/network/cubit/cubit.dart';
@@ -20,16 +21,36 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
   String? selectedCity;
   String? selectedCompany;
 
-  String? selectedMachine;
+  int _machineValue = 0;
+  String selectedMachine = '';
+  var machines = <String>[
+    'الآلة؟',
+    'آلة تصوير',
+    'بروجيكتور',
+    'شاشة',
+  ];
+  var locationMessage = '';
+  double latitude = 0.0;
+  double longitude = 0.0;
 
+  void getCurrentLocation() async
+  {
+    LocationPermission permission;
+    permission = await Geolocator.requestPermission();
 
-  String? selectedMachineType;
-
+    var position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    var lastPosition = await Geolocator.getLastKnownPosition();
+    //print(lastPosition);
+    print('latitude : ${position.altitude}, Longtude: ${position.longitude}');
+    setState(() {
+      locationMessage = '${position.altitude}, ${position.longitude}';
+      latitude = position.latitude;
+      longitude = position.longitude;
+    });
+  }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   var consultationController = TextEditingController();
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +116,7 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                       ),
                       child: ListTile(
                         trailing: const Text(
-                          'إختار المدينة',
+                          'المدينة',
                           style: TextStyle(
                             fontSize: 18.0,
                           ),
@@ -104,7 +125,8 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                           stream: FirebaseFirestore.instance
                               .collection('cities')
                               .snapshots(),
-                          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          builder:
+                              (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                             int i = 0;
                             if (!snapshot.hasData) {
                               return const Text('Loading');
@@ -150,7 +172,7 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                       ),
                       child: ListTile(
                         trailing: const Text(
-                          'إختار المؤسسة',
+                          'المدرسة',
                           style: TextStyle(
                             fontSize: 18.0,
                           ),
@@ -159,16 +181,19 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                           stream: FirebaseFirestore.instance
                               .collection('companies')
                               .snapshots(),
-                          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                          builder:
+                              (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                             int i = 0;
                             if (!snapshot.hasData) {
                               return const Text('Loading');
                             } else {
-                              final List<DropdownMenuItem<String>> companies = [];
+                              final List<DropdownMenuItem<String>> companies =
+                                  [];
 
                               for (i = 0; i < snapshot.data!.docs.length; i++) {
                                 DocumentSnapshot snap = snapshot.data!.docs[i];
-                                Map company = snap.data() as Map<String, dynamic>;
+                                Map company =
+                                    snap.data() as Map<String, dynamic>;
                                 companies.add(
                                   DropdownMenuItem(
                                     value: company['companyName'],
@@ -195,7 +220,6 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                     SizedBox(
                       height: height * 0.03,
                     ),
-
                     // Machine ListTile with DropdownButton
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -205,54 +229,32 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                       ),
                       child: ListTile(
                         trailing: const Text(
-                          'إختار الآله',
+                          'إختار الآلة',
                           style: TextStyle(
                             fontSize: 18.0,
                           ),
                         ),
-                        leading: StreamBuilder<QuerySnapshot>(
-                          stream: FirebaseFirestore.instance
-                              .collection('machines')
-                              .snapshots(),
-                          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                            int i = 0;
-                            if (!snapshot.hasData) {
-                              return const Text('Loading');
-                            } else {
-                              final List<DropdownMenuItem<String>> machines = [];
-
-                              for (i = 0; i < snapshot.data!.docs.length; i++) {
-                                DocumentSnapshot snap = snapshot.data!.docs[i];
-                                Map machine = snap.data() as Map<String, dynamic>;
-                                machines.add(
-                                  DropdownMenuItem(
-                                    value: machine['machineName'],
-                                    child: Text(machine['machineName']),
-                                  ),
-                                );
-                              }
-                              return DropdownButton(
-                                value: selectedMachine,
-                                //isExpanded: false,
-                                hint: const Text('الآلة؟'),
-                                items: machines,
-                                onChanged: (value) {
-                                  setState(() {
-                                    selectedMachine = value;
-                                  });
-                                },
-                              );
-                            }
+                        leading: DropdownButton<String>(
+                          hint: const Text('الآلة'),
+                          value: machines[_machineValue],
+                          items: machines.map((String machine) {
+                            return DropdownMenuItem<String>(
+                              value: machine,
+                              child: Text(machine),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _machineValue = machines.indexOf(value!);
+                              selectedMachine = value.toString();
+                            });
                           },
                         ),
                       ),
                     ),
-                    SizedBox(
-                      height: height * 0.03,
-                    ),
 
                     // Machine Type ListTile with DropdownButton
-                    Container(
+                    /*Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.0),
@@ -301,6 +303,36 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                           },
                         ),
                       ),
+                    ),*/
+                    SizedBox(
+                      height: height * 0.03,
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10.0),
+                        color: Colors.grey[300],
+                      ),
+                      child: ListTile(
+                        trailing: const Text(
+                          '<----   اضغط لتحديد الموقع',
+                          style: TextStyle(
+                            fontSize: 18.0,
+                          ),
+                        ),
+                        leading: IconButton(
+                          onPressed: ()
+                          {
+                            getCurrentLocation();
+                            print(locationMessage);
+                          },
+                          icon: const Icon(
+                            Icons.location_on_outlined,
+                            color: Colors.blue,
+                            size: 30.0,
+                          ),
+                        ),
+                      ),
                     ),
                     SizedBox(
                       height: height * 0.03,
@@ -309,8 +341,14 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                     // Consultation TextField
                     SizedBox(
                       width: width * 0.8, //height: 350,
-                      child: TextField(
+                      child: TextFormField(
                         controller: consultationController,
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'برجاء كتابة الإستفسار';
+                          }
+                          return null;
+                        },
                         textDirection: TextDirection.rtl,
                         maxLines: 5,
                         style: Theme.of(context).textTheme.subtitle1?.copyWith(
@@ -345,22 +383,31 @@ class _RequestOrderScreenState extends State<RequestOrderScreen> {
                           if (_formKey.currentState!.validate()) {
                             var city = selectedCity.toString();
                             var company = selectedCompany.toString();
-                            var machine = selectedMachine.toString();
-                            var machineType = selectedMachineType.toString();
+                            var machine = selectedMachine;
                             var consultation = consultationController.text;
 
-                            RequestCubit.get(context).userRequest(
-                              city: city.toString(),
-                              school: company.toString(),
-                              machine: machine.toString(),
-                              machineType: machineType.toString(),
-                              consultation: consultation.toString(),
-                            );
-                            consultationController.text = '';
-                            showToast(
-                              message: 'تم إرسال طلبك بنجاح',
-                              state: ToastStates.SUCCESS,
-                            );
+                            if (machine.isEmpty &&
+                                consultationController.text.isEmpty && latitude == 0.0 && longitude == 0.0) {
+                              return showToast(
+                                message:
+                                    'تأكد من تحديد موقعك وإختيار الألة وكتابة الإستفسار!',
+                                state: ToastStates.ERROR,
+                              );
+                            } else {
+                              RequestCubit.get(context).userRequest(
+                                city: city.toString(),
+                                school: company.toString(),
+                                machine: machine.toString(),
+                                latitude: latitude,
+                                longitude: longitude,
+                                consultation: consultation.toString(),
+                              );
+                              consultationController.text = '';
+                              showToast(
+                                message: 'تم إرسال طلبك بنجاح',
+                                state: ToastStates.SUCCESS,
+                              );
+                            }
                           }
                         },
                         text: 'إرسال',

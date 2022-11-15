@@ -4,7 +4,8 @@ class RequestModel {
   late String companyName;
   late String school;
   late String machine;
-  late String machineType;
+  late double latitude;
+  late double longitude;
   late String consultation;
 
   RequestModel({
@@ -13,7 +14,8 @@ class RequestModel {
     required this.companyName,
     required this.school,
     required this.machine,
-    required this.machineType,
+    required this.latitude,
+    required this.longitude,
     required this.consultation,
   });
 
@@ -24,7 +26,8 @@ class RequestModel {
     'companyName' : companyName,
     'school' : school,
     'machine' : machine,
-    'machineType' : machineType,
+    'latitude' : latitude,
+    'longitude' : longitude,
     'consultation' : consultation,
   };
 
@@ -35,7 +38,8 @@ class RequestModel {
     companyName = json['companyName'];
     school = json['school'];
     machine = json['machine'];
-    machineType = json['machineType'];
+    latitude = json['latitude'];
+    longitude = json['longitude'];
     consultation = json['consultation'];
   }
 }

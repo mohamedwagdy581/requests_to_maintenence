@@ -16,14 +16,15 @@ class RequestCubit extends Cubit<RequestStates>
         required String city,
         required String school,
         required String machine,
-        required String machineType,
+        required double latitude,
+        required double longitude,
         required String consultation,
       })
   {
     emit(RequestLoadingState());
     var companyName = FirebaseAuth.instance.currentUser?.displayName;
 
-    FirebaseFirestore.instance.collection('requests').doc().get().then((value)
+    FirebaseFirestore.instance.collection(city).doc(city).collection('requests').doc().get().then((value)
     {
 
       createUser(
@@ -31,8 +32,9 @@ class RequestCubit extends Cubit<RequestStates>
         companyName: companyName.toString(),
         school: school,
         machine: machine,
+        latitude: latitude,
+        longitude: longitude,
         uId: value.id.toString(),
-        machineType: machineType.toString(),
         consultation: consultation.toString(),
         //isEmailVerified: value.user!.emailVerified.toString(),
       );
@@ -48,8 +50,9 @@ class RequestCubit extends Cubit<RequestStates>
         required String companyName,
         required String school,
         required String machine,
+        required double latitude,
+        required double longitude,
         required String uId,
-        required String machineType,
         required String consultation,
       })
   {
@@ -59,15 +62,14 @@ class RequestCubit extends Cubit<RequestStates>
       companyName: companyName,
       school: school,
       machine: machine,
+      latitude: latitude,
+      longitude: longitude,
       uId: uId,
-      machineType: machineType, 
       consultation: consultation,
     );
 
     FirebaseFirestore.instance
-        .collection('requests')
-        .doc(uId)
-        .set(model.toJson())
+        .collection(city).doc(city).collection('requests').doc().set(model.toJson())
         .then((value)
     {
       emit(CreateRequestSuccessState());
