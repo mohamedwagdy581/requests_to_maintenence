@@ -6,9 +6,9 @@ class LoginLoadingState extends LoginStates {}
 
 class LoginSuccessState extends LoginStates
 {
-  final String uId;
+  final String uId, city;
 
-  LoginSuccessState(this.uId);
+  LoginSuccessState(this.uId, this.city);
 }
 
 class LoginErrorState extends LoginStates

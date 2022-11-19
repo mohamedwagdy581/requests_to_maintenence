@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../models/request_model.dart';
+import '../../../models/user_model.dart';
 import 'requests_states.dart';
 
 class RequestCubit extends Cubit<RequestStates>
@@ -15,6 +17,7 @@ class RequestCubit extends Cubit<RequestStates>
       {
         required String city,
         required String school,
+        required String phone,
         required String machine,
         required double latitude,
         required double longitude,
@@ -26,11 +29,13 @@ class RequestCubit extends Cubit<RequestStates>
 
     FirebaseFirestore.instance.collection(city).doc(city).collection('requests').doc().get().then((value)
     {
+      print(city);
 
       createUser(
         city: city,
         companyName: companyName.toString(),
         school: school,
+        phone: phone,
         machine: machine,
         latitude: latitude,
         longitude: longitude,
@@ -49,6 +54,7 @@ class RequestCubit extends Cubit<RequestStates>
         required String city,
         required String companyName,
         required String school,
+        required String phone,
         required String machine,
         required double latitude,
         required double longitude,
@@ -61,6 +67,7 @@ class RequestCubit extends Cubit<RequestStates>
       city: city,
       companyName: companyName,
       school: school,
+      phone: phone,
       machine: machine,
       latitude: latitude,
       longitude: longitude,
@@ -78,6 +85,21 @@ class RequestCubit extends Cubit<RequestStates>
       emit(CreateRequestErrorState(error.toString()));
     });
   }
+
+  IconData locationIcon = Icons.add_location_alt_outlined;
+  bool isLocation = false;
+  void changeLocationIcon()
+  {
+    isLocation = !isLocation;
+    locationIcon = isLocation ? Icons.add_location_alt_outlined : Icons.done_all;
+
+    emit(ChangeLocationIconState());
+  }
+
+  Stream<List<UserModel>> readUserData() =>
+      FirebaseFirestore.instance.collection('جازان').doc('جازان').collection('users')
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map((doc) => UserModel.fromJson(doc.data())).toList());
 
 
 }

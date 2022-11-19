@@ -6,17 +6,35 @@ import '../../layout/home_layout.dart';
 import '../../shared/components/components.dart';
 import '../../shared/network/cubit/cubit.dart';
 import '../../shared/network/local/cash_helper.dart';
-import '../register/register_screen.dart';
 import 'login_cubit/login_cubit.dart';
 import 'login_cubit/login_states.dart';
 
 // ignore: must_be_immutable
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   LoginScreen({Key? key}) : super(key: key);
 
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   late var formKey = GlobalKey<FormState>();
+
   var emailController = TextEditingController();
+
   var passwordController = TextEditingController();
+
+  int _areaValue = 0;
+
+  String _area = '';
+
+  var areas = <String>[
+    'إختر المنطقة؟',
+    'أبوعريش',
+    'جازان',
+    'أحدالمسارحة',
+    'العارضة',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +59,7 @@ class LoginScreen extends StatelessWidget {
               key: 'uId',
               value: state.uId,
             ).then((value) {
-
+              CashHelper.saveData(key: 'city', value: state.city);
               navigateAndFinish(
                 context,
                 const HomeLayout(),
@@ -117,6 +135,41 @@ class LoginScreen extends StatelessWidget {
                           height: height * 0.02,
                         ),
 
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10.0),
+                            color: Colors.grey[300],
+                          ),
+                          child: ListTile(
+                            title: const Text(
+                              'Select Your Area',
+                              style: TextStyle(
+                                fontSize: 18.0,
+                              ),
+                            ),
+                            trailing: DropdownButton<String>(
+                              hint: const Text('Area',textAlign: TextAlign.end,),
+                              value: areas[_areaValue],
+                              items: areas.map((String areaValue) {
+                                return DropdownMenuItem<String>(
+                                  value: areaValue,
+                                  child: Text(areaValue),
+                                );
+                              }).toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _areaValue = areas.indexOf(value!);
+                                  _area = value.toString();
+                                });
+                              },
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(
+                          height: height * 0.02,
+                        ),
+
                         // TextFormField of Password
                         defaultTextFormField(
                           controller: passwordController,
@@ -158,6 +211,7 @@ class LoginScreen extends StatelessWidget {
                                   {
                                     LoginCubit.get(context).userLogin(
                                       email: emailController.text.trim(),
+                                      city: _area,
                                       password: passwordController.text.trim(),
                                     );
                                   }
@@ -168,34 +222,6 @@ class LoginScreen extends StatelessWidget {
                               ),
                           fallback: (context) =>
                           const Center(child: CircularProgressIndicator()),
-                        ),
-
-                        //SizedBox between Login Button and Don't have an account
-                        SizedBox(
-                          height: height * 0.02,
-                        ),
-
-                        // Row that contain Don't have an account text and Register TextButton
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Don\'t have an account?',
-                              style: Theme.of(context).textTheme.subtitle1?.copyWith(
-                                color:
-                                AppCubit.get(context).isDark ? Colors.black : Colors.white,
-                              ),
-                            ),
-                            defaultTextButton(
-                              onPressed: () {
-                                navigateAndFinish(
-                                  context,
-                                  RegisterScreen(),
-                                );
-                              },
-                              text: 'REGISTER',
-                            ),
-                          ],
                         ),
                       ],
                     ),

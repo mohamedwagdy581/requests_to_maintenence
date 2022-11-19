@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -9,9 +8,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../models/user_model.dart';
-import '../../../modules/profile/profile_screen.dart';
-import '../../../modules/request_order/request_order_screen.dart';
-import '../../../modules/settings/settings_screen.dart';
 import '../../components/constants.dart';
 import '../local/cash_helper.dart';
 import 'states.dart';
@@ -22,30 +18,12 @@ class AppCubit extends Cubit<AppStates> {
   // Get context to Easily use in a different places in all Project
   static AppCubit get(context) => BlocProvider.of(context);
 
-  // List of AppBar Title
-  List<String> appBarTitle = const [
-    'الرئيسية',
-    //'Settings',
-  ];
-
-  // Change BottomNavigationBar index
-  int currentIndex = 0;
-  List<Widget> screens = const [
-    RequestOrderScreen(),
-    //SettingsScreen(),
-  ];
-
-  void changeBottomNavBar(int index) {
-    currentIndex = index;
-    emit(AppChangeBottomNavigationBarState());
-  }
-
   UserModel? userModel;
 
   void getUserData() {
     emit(AppGetUserLoadingState());
 
-    FirebaseFirestore.instance.collection('users').doc(uId).get().then((value) {
+    FirebaseFirestore.instance.collection(city!).doc(city).collection('users').doc(uId).get().then((value) {
       userModel = UserModel.fromJson(value.data()!);
       emit(AppGetUserSuccessState());
     }).catchError((error) {

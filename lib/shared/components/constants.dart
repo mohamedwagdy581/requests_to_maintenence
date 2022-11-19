@@ -13,6 +13,7 @@ void signOut(context) {
 }
 
 String? uId;
+String? city;
 
 String profileImage = '';
 

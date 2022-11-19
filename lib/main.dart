@@ -21,6 +21,7 @@ void main() async
   bool? isDark = CashHelper.getData(key: 'isDark');
   //profileImage = CashHelper.getData(key: 'imagePath');
   uId = CashHelper.getData(key: 'uId');
+  city = CashHelper.getData(key: 'city');
 
   runApp(MyApp(
     isDark: isDark,
