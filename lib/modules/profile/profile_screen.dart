@@ -23,11 +23,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
   var phoneController = TextEditingController();
 
   var passwordController = TextEditingController();
+  final userData = FirebaseAuth.instance.currentUser;
+  String name = '';
+  String email = '';
+  String image = '';
+  String cover = '';
+  String phone = '';
+  String label = '';
 
   final CollectionReference users = FirebaseFirestore.instance
       .collection(city!)
       .doc(city)
       .collection('users');
+
+  Future getUserData() async {
+    await FirebaseFirestore.instance
+        .collection(city!)
+        .doc(city)
+        .collection('users')
+        .doc(userData!.uid)
+        .get()
+        .then((snapshot) async {
+      if (snapshot.exists) {
+        setState(() {
+          name = snapshot.data()!['name'];
+          email = snapshot.data()!['email'];
+          image = snapshot.data()!['image'];
+          cover = snapshot.data()!['cover'];
+          phone = snapshot.data()!['phone'];
+        });
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getUserData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         .doc(city)
         .collection('users')
         .snapshots();
-    final userData = FirebaseAuth.instance.currentUser;
+
     var cubit = AppCubit.get(context);
     return Scaffold(
       appBar: AppBar(
@@ -49,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 navigateAndFinish(context, const HomeLayout());
               },
-              text: 'Save',
+              text: 'خروج',
             ),
           ),
         ],
@@ -97,7 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       SizedBox(
                                         height: height * 0.19,
                                         width: double.infinity,
-                                        child: cubit.coverImageUrl == ''
+                                        child: cover == ''
                                             ? const Image(
                                                 image: NetworkImage(
                                                   'https://cdn.quotesgram.com/img/54/5/1828314355-ayat-kareema-islamic-fb-cover.png',
@@ -106,14 +140,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               )
                                             : Image(
                                                 image: NetworkImage(
-                                                  cubit.coverImageUrl,
+                                                  cover,
                                                 ),
                                                 fit: BoxFit.cover,
                                               ),
                                       ),
                                       IconButton(
-                                        onPressed: () {
+                                        onPressed: () async {
                                           cubit.pickUploadCoverImage();
+                                          coverImage = cover;
                                         },
                                         icon: const CircleAvatar(
                                           radius: 20.0,
@@ -139,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           : const Color(0xffF4F2F2),
                                       child: CircleAvatar(
                                         radius: 60.0,
-                                        child: cubit.profileImageUrl == ''
+                                        child: image == ''
                                             ? CircleAvatar(
                                                 backgroundColor:
                                                     Colors.grey[300],
@@ -152,14 +187,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             : CircleAvatar(
                                                 radius: 60.0,
                                                 backgroundImage: NetworkImage(
-                                                  cubit.profileImageUrl,
+                                                  image,
                                                 ),
                                               ),
                                       ),
                                     ),
                                     IconButton(
-                                      onPressed: () {
+                                      onPressed: () async {
                                         cubit.pickUploadProfileImage();
+                                        profileImage = image;
                                       },
                                       icon: const CircleAvatar(
                                         radius: 20.0,
@@ -178,7 +214,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             height: height * 0.015,
                           ),
                           Text(
-                            'Name : ${userData!.displayName}',
+                            'Name : $name',
                             textAlign: TextAlign.center,
                             style: Theme.of(context)
                                 .textTheme
@@ -189,7 +225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             height: height * 0.012,
                           ),
                           Text(
-                            'Email : ${userData.email}',
+                            'Email : ${userData!.email}',
                             textAlign: TextAlign.center,
                             style:
                                 Theme.of(context).textTheme.caption?.copyWith(
@@ -202,7 +238,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           SizedBox(
                             height: height * 0.012,
                           ),
-                          const Divider(thickness: 1.5,),
+                          const Divider(
+                            thickness: 1.5,
+                          ),
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 20.0),
                             child: Container(
@@ -227,7 +265,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     onPressed: () async {
                                       final String phone = phoneController.text;
 
-                                      await users.doc(userData.uid).update({
+                                      await users.doc(userData!.uid).update({
                                         'phone': phone,
                                       });
                                       phoneController.text = '';
@@ -235,6 +273,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         message: 'تم التحديث بنجاح',
                                         state: ToastStates.SUCCESS,
                                       );
+                                      setState(() {
+                                        label = phone;
+                                      });
                                     },
                                     text: 'تحديث',
                                   ),
@@ -245,7 +286,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 child: defaultTextFormField(
                                   controller: phoneController,
                                   keyboardType: TextInputType.phone,
-                                  label: 'الهاتف',
+                                  label: phone,
                                   textStyle: Theme.of(context)
                                       .textTheme
                                       .subtitle1
@@ -266,7 +307,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       : Colors.white,
                                 ),
                               ),
-
                             ],
                           ),
 
@@ -283,6 +323,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   child: defaultButton(
                                     onPressed: () async {
                                       await openDialog();
+                                      //navigateAndFinish(context, const ResetPasswordScreen());
                                     },
                                     text: 'تحديث',
                                   ),
@@ -294,12 +335,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 20.0),
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(
-                                        10.0),
+                                    borderRadius: BorderRadius.circular(10.0),
                                     color: Colors.grey[300],
                                   ),
                                   child: const ListTile(
-                                    title : Text(
+                                    title: Text(
                                       'الرقم السري',
                                       textAlign: TextAlign.end,
                                       style: TextStyle(
@@ -312,6 +352,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ],
                           ),
 
+                          SizedBox(
+                            height: height * 0.015,
+                          ),
+
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 50.0),
+                            child: defaultButton(
+                              onPressed: () async {
+                                //navigateAndFinish(context, const HomeLayout());
+                                await users.doc(userData!.uid).update({
+                                  'image': cubit.profileImageUrl,
+                                  'cover': cubit.coverImageUrl,
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text(
+                                      'إضغط مرة أخرى للحفظ والخروج',
+                                      style: TextStyle(
+                                        color: Colors.green,
+                                        fontSize: 16.0,
+                                      ),
+                                    ),
+                                    duration: const Duration(
+                                      seconds: 5,
+                                    ),
+                                    action: SnackBarAction(
+                                      label: 'حفظ',
+                                      onPressed: () async {
+                                        await users.doc(userData!.uid).update({
+                                          'image': cubit.profileImageUrl,
+                                          'cover': cubit.coverImageUrl,
+                                        });
+                                        navigateAndFinish(
+                                            context, const HomeLayout());
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                              text: 'تحديث',
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -328,60 +411,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-  Future<String?> openDialog() => showDialog<String>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('أدخل الإيميل الخاص بك'),
-      content: defaultTextFormField(
-        controller: passwordController,
-        keyboardType: TextInputType.emailAddress,
-        label: 'الايميل',
-        textStyle: Theme.of(context).textTheme.subtitle1?.copyWith(
-          color: AppCubit.get(context).isDark
-              ? Colors.black
-              : Colors.white,
-        ),
-        validator: (String? value) {
-          if (value!.isEmpty) {
-            return 'Please Enter City Name';
-          }
-          return null;
-        },
-        suffix: Icons.email,
-        prefixColor:
-        AppCubit.get(context).isDark ? Colors.black : Colors.white,
-      ),
-      actions: [
-        defaultTextButton(
-          onPressed: () {
-            passwordReset();
-            //Navigator.of(context).pop(passwordController.text);
-          },
-          text: 'إرسال',
-        ),
-      ],
-    ),
-  );
 
-  Future passwordReset() async
-  {
-    try
-    {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: passwordController.text.trim());
-      showDialog(context: context, builder: (context)
-      {
-        return const AlertDialog(
-          content: Text('تم إرسال لينك تغيير الباسورد برجاء التوجه الى الإيميل'),
-        );
-      });
-    } on FirebaseAuthException catch (error)
-    {
-      showDialog(context: context, builder: (context)
-      {
-        return AlertDialog(
-          content: Text(error.message.toString()),
-        );
-      });
+  Future<String?> openDialog() => showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('أدخل الإيميل الخاص بك'),
+          content: defaultTextFormField(
+            controller: passwordController,
+            keyboardType: TextInputType.emailAddress,
+            label: 'الايميل',
+            textStyle: Theme.of(context).textTheme.subtitle1?.copyWith(
+                  color: AppCubit.get(context).isDark
+                      ? Colors.black
+                      : Colors.white,
+                ),
+            validator: (String? value) {
+              if (value!.isEmpty) {
+                return 'Please Enter City Name';
+              }
+              if (!RegExp("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9.-]+.[a-z]")
+                  .hasMatch(value)) {
+                return 'برجاء ادخال ايميل صحيح';
+              }
+              return null;
+            },
+            suffix: Icons.email,
+            prefixColor:
+                AppCubit.get(context).isDark ? Colors.black : Colors.white,
+          ),
+          actions: [
+            defaultTextButton(
+              onPressed: () {
+                passwordReset();
+                //Navigator.of(context).pop(passwordController.text);
+              },
+              text: 'إرسال',
+            ),
+          ],
+        ),
+      );
+
+  Future passwordReset() async {
+    try {
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: passwordController.text.trim());
+      showDialog(
+          context: context,
+          builder: (context) {
+            return const AlertDialog(
+              content:
+                  Text('تم إرسال لينك تغيير الباسورد برجاء التوجه الى الإيميل'),
+            );
+          });
+    } on FirebaseAuthException catch (error) {
+      showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Text(error.message.toString()),
+            );
+          });
     }
+    navigateAndFinish(context, const ProfileScreen());
   }
 }

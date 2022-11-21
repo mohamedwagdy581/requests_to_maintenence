@@ -124,6 +124,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             {
                               return 'Please enter your email address';
                             }
+                            if(!RegExp("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9.-]+.[a-z]").hasMatch(value))
+                            {
+                              return 'برجاء ادخال ايميل صحيح';
+                            }
                             return null;
                           },
                           prefix: Icons.email_outlined,
@@ -182,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           validator: (String? value) {
                             if(value!.isEmpty)
                             {
-                              return 'Please enter your email address';
+                              return 'Please enter your Password';
                             }
                             return null;
                           },

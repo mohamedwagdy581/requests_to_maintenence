@@ -16,6 +16,7 @@ String? uId;
 String? city;
 
 String profileImage = '';
+String coverImage = '';
 
 // void printFullText(String text) {
 //   final pattern = RegExp('.{1,800}');

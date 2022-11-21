@@ -40,8 +40,7 @@ class _HomeLayoutState extends State<HomeLayout> {
   double latitude = 0.0;
   double longitude = 0.0;
 
-  void getCurrentLocation() async
-  {
+  void getCurrentLocation() async {
     LocationPermission permission;
     permission = await Geolocator.requestPermission();
 
@@ -54,6 +53,36 @@ class _HomeLayoutState extends State<HomeLayout> {
     });
   }
 
+  final userData = FirebaseAuth.instance.currentUser;
+  String name = '';
+  String email = '';
+  String image = '';
+
+  Future getUserData() async {
+    await FirebaseFirestore.instance
+        .collection(city!)
+        .doc(city)
+        .collection('users')
+        .doc(userData!.uid)
+        .get()
+        .then((snapshot) async {
+      if (snapshot.exists) {
+        setState(() {
+          name = snapshot.data()!['name'];
+          email = snapshot.data()!['email'];
+          image = snapshot.data()!['image'];
+        });
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getUserData();
+  }
+
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   var consultationController = TextEditingController();
 
@@ -62,16 +91,9 @@ class _HomeLayoutState extends State<HomeLayout> {
     return BlocConsumer<AppCubit, AppStates>(
       listener: (BuildContext context, state) {},
       builder: (BuildContext context, state) {
-        var cubit = AppCubit.get(context);
         var user = FirebaseAuth.instance.currentUser;
-        var height = MediaQuery
-            .of(context)
-            .size
-            .height;
-        var width = MediaQuery
-            .of(context)
-            .size
-            .width;
+        var height = MediaQuery.of(context).size.height;
+        var width = MediaQuery.of(context).size.width;
         uId = CashHelper.getData(key: 'uId');
         city = CashHelper.getData(key: 'city');
 
@@ -87,90 +109,6 @@ class _HomeLayoutState extends State<HomeLayout> {
             centerTitle: true,
           ),
           // **************************  The Drawer  ***************************
-          /*drawer: Drawer(
-            child: ListView(
-              children: <Widget>[
-                // Header
-                UserAccountsDrawerHeader(
-                  accountName: uId != null ?  Text('${user?.displayName}') : const Text(''),
-                  accountEmail: uId != null ?  Text('${user?.email}') : Container(
-                    width: width * 0.5,
-                    padding: const EdgeInsets.only(bottom: 15,left: 5,right: 60),
-                    child: defaultButton(
-                      onPressed: ()
-                      {
-                        navigateAndFinish(context, LoginScreen());
-                      },
-                      text: 'سجل الآن',
-                      backgroundColor: Colors.deepOrange,
-                    ),
-                  ),
-                  currentAccountPicture: cubit.profileImageUrl == ''
-                      ? Image.network('https://icons-for-free.com/iconfiles/png/512/person-1324760545186718018.png')
-                      : CircleAvatar(
-                      backgroundImage: NetworkImage(
-                          cubit.profileImageUrl,
-                      ),
-                  ),
-                  decoration: const BoxDecoration(
-                      color: Colors.blue,
-                  ),
-                ),
-
-                // Body
-                 SizedBox(
-                  height: height * 0.03,
-                ),
-
-                InkWell(
-                  onTap: () {
-                    navigateAndFinish(context, const HomeLayout());
-                  },
-                  child: const ListTile(
-                    title: Text(
-                        'الرئيسية',
-                    ),
-                    leading: Icon(
-                      Icons.home,
-                      color: Colors.green,
-                    ),
-                  ),
-                ),
-
-                SizedBox(
-                  height: height * 0.03,
-                ),
-                const Divider(),
-
-                InkWell(
-                  onTap: ()
-                  {
-                    navigateTo(context, const AboutUsScreen());
-                  },
-                  child: const ListTile(
-                    title: Text('للتواصل'),
-                    leading: Icon(
-                      Icons.help,
-                      color: Colors.blue,
-                    ),
-                  ),
-                ),
-
-                InkWell(
-                  onTap: () {
-                    signOut(context);
-                  },
-                  child: const ListTile(
-                    title: Text('تسجيل خروج'),
-                    leading: Icon(
-                      Icons.logout_outlined,
-                      color: Colors.red,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),*/
           endDrawer: Drawer(
             child: ListView(
               children: <Widget>[
@@ -182,25 +120,26 @@ class _HomeLayoutState extends State<HomeLayout> {
                   accountEmail: uId != null
                       ? Text('${user?.email}')
                       : Container(
-                    width: width * 0.5,
-                    padding: const EdgeInsets.only(
-                        bottom: 15, left: 5, right: 60),
-                    child: defaultButton(
-                      onPressed: () {
-                        navigateAndFinish(context, LoginScreen());
-                      },
-                      text: 'سجل الآن',
-                      backgroundColor: Colors.deepOrange,
-                    ),
-                  ),
-                  currentAccountPicture: cubit.profileImageUrl == ''
+                          width: width * 0.5,
+                          padding: const EdgeInsets.only(
+                              bottom: 15, left: 5, right: 60),
+                          child: defaultButton(
+                            onPressed: () {
+                              navigateAndFinish(context, LoginScreen());
+                            },
+                            text: 'سجل الآن',
+                            backgroundColor: Colors.deepOrange,
+                          ),
+                        ),
+                  currentAccountPicture: image == ''
                       ? Image.network(
-                      'https://icons-for-free.com/iconfiles/png/512/person-1324760545186718018.png')
+                          'https://icons-for-free.com/iconfiles/png/512/person-1324760545186718018.png',
+                        )
                       : CircleAvatar(
-                    backgroundImage: NetworkImage(
-                      cubit.profileImageUrl,
-                    ),
-                  ),
+                          backgroundImage: NetworkImage(
+                            image,
+                          ),
+                        ),
                   decoration: const BoxDecoration(
                     color: Colors.blue,
                   ),
@@ -218,15 +157,18 @@ class _HomeLayoutState extends State<HomeLayout> {
                   child: ListTile(
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      children:
-                      [
+                      children: [
                         const Text('الرئيسية'),
-                        SizedBox(width: width * 0.1,),
+                        SizedBox(
+                          width: width * 0.1,
+                        ),
                         const Icon(
                           Icons.home,
                           color: Colors.blue,
                         ),
-                        SizedBox(width: width * 0.03,),
+                        SizedBox(
+                          width: width * 0.03,
+                        ),
                       ],
                     ),
                   ),
@@ -243,15 +185,18 @@ class _HomeLayoutState extends State<HomeLayout> {
                   child: ListTile(
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      children:
-                      [
+                      children: [
                         const Text('الصفحة الشخصية'),
-                        SizedBox(width: width * 0.1,),
+                        SizedBox(
+                          width: width * 0.1,
+                        ),
                         const Icon(
                           Icons.person,
                           color: Colors.green,
                         ),
-                        SizedBox(width: width * 0.03,),
+                        SizedBox(
+                          width: width * 0.03,
+                        ),
                       ],
                     ),
                   ),
@@ -266,27 +211,26 @@ class _HomeLayoutState extends State<HomeLayout> {
                     AppCubit.get(context).changeAppModeTheme();
                   },
                   child: ListTile(
-                      title: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children:
-                        [
-                          const Text('تغيير الثيم'),
-                          SizedBox(width: width * 0.1,),
-                          Icon(
-                            AppCubit
-                                .get(context)
-                                .isDark
-                                ? Icons.wb_sunny_outlined
-                                : Icons.nightlight_outlined,
-                            color: AppCubit
-                                .get(context)
-                                .isDark
-                                ? Colors.blue
-                                : Colors.deepOrange,
-                          ),
-                          SizedBox(width: width * 0.03,),
-                        ],
-                      ),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        const Text('تغيير الثيم'),
+                        SizedBox(
+                          width: width * 0.1,
+                        ),
+                        Icon(
+                          AppCubit.get(context).isDark
+                              ? Icons.wb_sunny_outlined
+                              : Icons.nightlight_outlined,
+                          color: AppCubit.get(context).isDark
+                              ? Colors.blue
+                              : Colors.deepOrange,
+                        ),
+                        SizedBox(
+                          width: width * 0.03,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
 
@@ -302,15 +246,18 @@ class _HomeLayoutState extends State<HomeLayout> {
                   child: ListTile(
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      children:
-                      [
+                      children: [
                         const Text('للتواصل'),
-                        SizedBox(width: width * 0.1,),
+                        SizedBox(
+                          width: width * 0.1,
+                        ),
                         const Icon(
                           Icons.help,
                           color: Colors.blue,
                         ),
-                        SizedBox(width: width * 0.03,),
+                        SizedBox(
+                          width: width * 0.03,
+                        ),
                       ],
                     ),
                   ),
@@ -323,15 +270,18 @@ class _HomeLayoutState extends State<HomeLayout> {
                   child: ListTile(
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
-                      children:
-                      [
+                      children: [
                         const Text('تسجيل الخروج'),
-                        SizedBox(width: width * 0.1,),
+                        SizedBox(
+                          width: width * 0.1,
+                        ),
                         const Icon(
                           Icons.logout_outlined,
                           color: Colors.red,
                         ),
-                        SizedBox(width: width * 0.03,),
+                        SizedBox(
+                          width: width * 0.03,
+                        ),
                       ],
                     ),
                   ),
@@ -342,11 +292,8 @@ class _HomeLayoutState extends State<HomeLayout> {
 
           // ***********************  The Scaffold Body  ***********************
           body: RefreshIndicator(
-            onRefresh: () async
-            {
-              setState(() {
-
-              });
+            onRefresh: () async {
+              setState(() {});
             },
             child: BlocProvider(
               create: (BuildContext context) => RequestCubit(),
@@ -361,11 +308,10 @@ class _HomeLayoutState extends State<HomeLayout> {
                         return Text('Something Wrong! ${snapshot.error}');
                       } else if (snapshot.hasData) {
                         final List storeDocs = [];
-                        snapshot.data!.docs.map((
-                            DocumentSnapshot documentSnapshot) {
-                          Map users = documentSnapshot.data() as Map<
-                              String,
-                              dynamic>;
+                        snapshot.data!.docs
+                            .map((DocumentSnapshot documentSnapshot) {
+                          Map users =
+                              documentSnapshot.data() as Map<String, dynamic>;
                           storeDocs.add(users);
                           users['uId'] = documentSnapshot.id;
                         }).toList();
@@ -423,8 +369,8 @@ class _HomeLayoutState extends State<HomeLayout> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 20.0),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                              10.0),
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
                                           color: Colors.grey[300],
                                         ),
                                         child: ListTile(
@@ -438,7 +384,8 @@ class _HomeLayoutState extends State<HomeLayout> {
                                             storeDocs[index]['area'],
                                             style: const TextStyle(
                                                 fontSize: 20.0,
-                                                fontWeight: FontWeight.bold),),
+                                                fontWeight: FontWeight.bold),
+                                          ),
                                         ),
                                       ),
                                       SizedBox(
@@ -450,8 +397,8 @@ class _HomeLayoutState extends State<HomeLayout> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 20.0),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                              10.0),
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
                                           color: Colors.grey[300],
                                         ),
                                         child: ListTile(
@@ -465,7 +412,8 @@ class _HomeLayoutState extends State<HomeLayout> {
                                             storeDocs[index]['school'],
                                             style: const TextStyle(
                                                 fontSize: 20.0,
-                                                fontWeight: FontWeight.bold),),
+                                                fontWeight: FontWeight.bold),
+                                          ),
                                         ),
                                       ),
                                       SizedBox(
@@ -476,8 +424,8 @@ class _HomeLayoutState extends State<HomeLayout> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 20.0),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                              10.0),
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
                                           color: Colors.grey[300],
                                         ),
                                         child: ListTile(
@@ -490,15 +438,17 @@ class _HomeLayoutState extends State<HomeLayout> {
                                           leading: DropdownButton<String>(
                                             hint: const Text('الآلة'),
                                             value: machines[_machineValue],
-                                            items: machines.map((
-                                                String machine) {
+                                            items:
+                                                machines.map((String machine) {
                                               return DropdownMenuItem<String>(
                                                 value: machine,
-                                                child: Text(machine,
+                                                child: Text(
+                                                  machine,
                                                   style: const TextStyle(
                                                       fontSize: 20.0,
-                                                      fontWeight: FontWeight
-                                                          .bold),),
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
                                               );
                                             }).toList(),
                                             onChanged: (value) {
@@ -570,8 +520,8 @@ class _HomeLayoutState extends State<HomeLayout> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 20.0),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                              10.0),
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
                                           color: Colors.grey[300],
                                         ),
                                         child: ListTile(
@@ -588,12 +538,10 @@ class _HomeLayoutState extends State<HomeLayout> {
                                                   .changeLocationIcon();
                                             },
                                             icon: Icon(
-                                              RequestCubit
-                                                  .get(context)
+                                              RequestCubit.get(context)
                                                   .locationIcon,
-                                              color: RequestCubit
-                                                  .get(context)
-                                                  .isLocation
+                                              color: RequestCubit.get(context)
+                                                      .isLocation
                                                   ? Colors.blue
                                                   : Colors.green,
                                               size: 30.0,
@@ -618,22 +566,20 @@ class _HomeLayoutState extends State<HomeLayout> {
                                           },
                                           textDirection: TextDirection.rtl,
                                           maxLines: 5,
-                                          style: Theme
-                                              .of(context)
+                                          style: Theme.of(context)
                                               .textTheme
                                               .subtitle1
                                               ?.copyWith(
-                                            color: AppCubit
-                                                .get(context)
-                                                .isDark
-                                                ? Colors.black
-                                                : Colors.white,
-                                          ),
+                                                color:
+                                                    AppCubit.get(context).isDark
+                                                        ? Colors.black
+                                                        : Colors.white,
+                                              ),
                                           textAlign: TextAlign.end,
                                           decoration: const InputDecoration(
                                             hintText: ' !اكتب استفسارك',
-                                            contentPadding: EdgeInsets
-                                                .symmetric(
+                                            contentPadding:
+                                                EdgeInsets.symmetric(
                                               vertical: 20,
                                               horizontal: 15,
                                             ),
@@ -651,73 +597,72 @@ class _HomeLayoutState extends State<HomeLayout> {
                                       ),
 
                                       ConditionalBuilder(
-                                        condition: state is! RequestLoadingState,
-                                        builder: (context) =>
-                                            defaultButton(
-                                              onPressed: () {
-                                                if (_formKey.currentState!
-                                                    .validate()) {
-                                                  var city = storeDocs[index]['area'];
-                                                  var school = storeDocs[index]['school'];
-                                                  var phone = storeDocs[index]['phone'];
-                                                  var machine = selectedMachine;
-                                                  var consultation = consultationController
-                                                      .text;
+                                        condition:
+                                            state is! RequestLoadingState,
+                                        builder: (context) => defaultButton(
+                                          onPressed: () {
+                                            if (_formKey.currentState!
+                                                .validate()) {
+                                              var city =
+                                                  storeDocs[index]['area'];
+                                              var school =
+                                                  storeDocs[index]['school'];
+                                              var phone =
+                                                  storeDocs[index]['phone'];
+                                              var machine = selectedMachine;
+                                              var consultation =
+                                                  consultationController.text;
 
-                                                  if (machine.isEmpty &&
-                                                      consultationController
-                                                          .text.isEmpty &&
-                                                      latitude == 0.0 &&
-                                                      longitude == 0.0) {
-                                                    return showToast(
-                                                      message:
+                                              if (machine.isEmpty &&
+                                                  consultationController
+                                                      .text.isEmpty &&
+                                                  latitude == 0.0 &&
+                                                  longitude == 0.0) {
+                                                return showToast(
+                                                  message:
                                                       'تأكد من تحديد موقعك وإختيار الألة وكتابة الإستفسار!',
-                                                      state: ToastStates.ERROR,
-                                                    );
-                                                  } else {
-                                                    RequestCubit.get(context)
-                                                        .userRequest(
-                                                      city: city.toString(),
-                                                      school: school.toString(),
-                                                      phone: phone.toString(),
-                                                      machine: machine
-                                                          .toString(),
-                                                      latitude: latitude,
-                                                      longitude: longitude,
-                                                      consultation: consultation
-                                                          .toString(),
-                                                    );
-                                                    setState(() {
-                                                      consultationController
-                                                          .text = '';
-                                                      selectedMachine = '';
-                                                      _machineValue = 0;
-                                                      RequestCubit
-                                                          .get(context)
-                                                          .locationIcon = Icons
+                                                  state: ToastStates.ERROR,
+                                                );
+                                              } else {
+                                                RequestCubit.get(context)
+                                                    .userRequest(
+                                                  city: city.toString(),
+                                                  school: school.toString(),
+                                                  phone: phone.toString(),
+                                                  machine: machine.toString(),
+                                                  latitude: latitude,
+                                                  longitude: longitude,
+                                                  consultation:
+                                                      consultation.toString(),
+                                                );
+                                                setState(() {
+                                                  consultationController.text =
+                                                      '';
+                                                  selectedMachine = '';
+                                                  _machineValue = 0;
+                                                  RequestCubit.get(context)
+                                                          .locationIcon =
+                                                      Icons
                                                           .add_location_alt_outlined;
-                                                      RequestCubit
-                                                          .get(context)
-                                                          .isLocation = false;
-                                                    });
+                                                  RequestCubit.get(context)
+                                                      .isLocation = false;
+                                                });
 
-                                                    showToast(
-                                                      message: 'تم إرسال طلبك بنجاح',
-                                                      state: ToastStates
-                                                          .SUCCESS,
-                                                    );
-                                                  }
-                                                }
-                                              },
-                                              text: 'إرسال',
-                                              backgroundColor: AppCubit
-                                                  .get(context)
-                                                  .isDark
+                                                showToast(
+                                                  message:
+                                                      'تم إرسال طلبك بنجاح',
+                                                  state: ToastStates.SUCCESS,
+                                                );
+                                              }
+                                            }
+                                          },
+                                          text: 'إرسال',
+                                          backgroundColor:
+                                              AppCubit.get(context).isDark
                                                   ? Colors.blue
                                                   : Colors.deepOrange,
-                                            ),
-                                        fallback: (context) =>
-                                        const Center(
+                                        ),
+                                        fallback: (context) => const Center(
                                             child: CircularProgressIndicator()),
                                       ),
                                     ],
