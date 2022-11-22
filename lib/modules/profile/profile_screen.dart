@@ -22,7 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   var phoneController = TextEditingController();
 
-  var passwordController = TextEditingController();
+  var emailController = TextEditingController();
   final userData = FirebaseAuth.instance.currentUser;
   String name = '';
   String email = '';
@@ -417,7 +417,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         builder: (context) => AlertDialog(
           title: const Text('أدخل الإيميل الخاص بك'),
           content: defaultTextFormField(
-            controller: passwordController,
+            controller: emailController,
             keyboardType: TextInputType.emailAddress,
             label: 'الايميل',
             textStyle: Theme.of(context).textTheme.subtitle1?.copyWith(
@@ -443,7 +443,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             defaultTextButton(
               onPressed: () {
                 passwordReset();
-                //Navigator.of(context).pop(passwordController.text);
+                emailController.clear();
+                navigateAndFinish(context, const HomeLayout());
               },
               text: 'إرسال',
             ),
@@ -454,7 +455,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future passwordReset() async {
     try {
       await FirebaseAuth.instance
-          .sendPasswordResetEmail(email: passwordController.text.trim());
+          .sendPasswordResetEmail(email: emailController.text.trim());
       showDialog(
           context: context,
           builder: (context) {
@@ -472,6 +473,5 @@ class _ProfileScreenState extends State<ProfileScreen> {
             );
           });
     }
-    navigateAndFinish(context, const ProfileScreen());
   }
 }
